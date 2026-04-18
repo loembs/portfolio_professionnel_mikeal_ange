@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import heroImg from "@/assets/my-creations/herosection.jpeg";
-import { creations, globalStats } from "@/lib/creations";
+import { creations, globalStats, type Creation } from "@/lib/creations";
 import { SiteFooter } from "@/components/site-footer";
+import { VideoModal } from "@/components/video-modal";
 import { useRef, useState } from "react";
 
 export const Route = createFileRoute("/")({
@@ -24,30 +25,18 @@ export const Route = createFileRoute("/")({
 function HomeVideoCard({
   creation,
   index,
+  onSelect,
 }: {
-  creation: (typeof creations)[number];
+  creation: Creation;
   index: number;
+  onSelect: (video: Creation) => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
   const [showStats, setShowStats] = useState(false);
 
-  const togglePlay = () => {
-    if (!videoRef.current) return;
-    if (isPlaying) {
-      videoRef.current.pause();
-    } else {
-      videoRef.current.play();
-    }
-    setIsPlaying(!isPlaying);
-  };
-
-  const toggleMute = (e: React.MouseEvent) => {
-    e.stopPropagation(); // empêche le clic de déclencher togglePlay
-    if (!videoRef.current) return;
-    videoRef.current.muted = !isMuted;
-    setIsMuted(!isMuted);
+  const handleInteraction = () => {
+    onSelect(creation);
   };
 
   const layout =
@@ -63,7 +52,7 @@ function HomeVideoCard({
     <div className={`creation-card group block ${layout}`}>
       <div
         className="relative overflow-hidden bg-card cursor-pointer"
-        onClick={togglePlay}
+        onClick={handleInteraction}
         onMouseEnter={() => setShowStats(true)}
         onMouseLeave={() => setShowStats(false)}
       >
@@ -71,7 +60,7 @@ function HomeVideoCard({
           ref={videoRef}
           src={creation.videoSrc}
           loop
-          muted // démarre muet pour respecter les règles navigateur
+          muted={false}
           playsInline
           preload="metadata"
           className={`w-full aspect-[9/16] md:aspect-[4/5] object-cover transition-all duration-700 ${
@@ -95,16 +84,6 @@ function HomeVideoCard({
             </svg>
           </div>
         </div>
-
-        {/* Bouton son — visible uniquement quand la vidéo joue */}
-        {isPlaying && (
-          <button
-            onClick={toggleMute}
-            className="absolute bottom-4 right-4 z-20 bg-black/50 backdrop-blur-sm border border-white/30 text-white px-3 py-2 font-mono-label text-xs hover:bg-black/70 transition-colors"
-          >
-            {isMuted ? "🔇 Son" : "🔊 Son"}
-          </button>
-        )}
 
         {/* Stats overlay on hover */}
         <div
@@ -149,42 +128,22 @@ function HomeVideoCard({
 }
 
 /* ------------------------------------------------------------------ */
-/*  Cinematic video section avec bouton unmute                         */
-/* ------------------------------------------------------------------ */
-function CinemaVideo() {
-  const [muted, setMuted] = useState(true);
-
-  return (
-    <section className="relative w-full h-screen overflow-hidden bg-black">
-      <video
-        src="https://res.cloudinary.com/dlna2kuo1/video/upload/v1769532846/IMG_0111_ybl39i.mov"
-        autoPlay
-        loop
-        muted={muted}
-        playsInline
-        preload="metadata"
-        className="w-full h-full object-cover"
-      />
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-        <p className="font-display not-italic uppercase tracking-[0.18em] text-white text-xl md:text-4xl animate-[cinema-title_3.2s_ease-out_forwards]">
-          directed by MikaelAnge
-        </p>
-      </div>
-      {/* Bouton unmute */}
-      <button
-        onClick={() => setMuted((m) => !m)}
-        className="absolute bottom-6 right-6 z-10 bg-black/50 backdrop-blur-sm border border-white/30 text-white px-4 py-2 font-mono-label text-xs hover:bg-black/70 transition-colors"
-      >
-        {muted ? "🔇 Activer le son" : "🔊 Couper le son"}
-      </button>
-    </section>
-  );
-}
-
-/* ------------------------------------------------------------------ */
 /*  Main page                                                          */
 /* ------------------------------------------------------------------ */
 function Index() {
+  const [selectedVideo, setSelectedVideo] = useState<Creation | null>(null);
+
+  const heroSectionVideo: Creation = {
+    id: "hero-intro",
+    title: "Directed by MikaelAnge",
+    client: "Intro",
+    category: "Cinematic",
+    videoSrc:
+      "https://res.cloudinary.com/dlna2kuo1/video/upload/v1769532846/IMG_0111_ybl39i.mov",
+    date: "2024",
+    stats: { views: "Intro", likes: "Intro", newFollowers: "Intro" },
+  };
+
   const heroShowcase = creations.slice(0, 5);
   const featuredCreations = creations.slice(0, 6);
 
@@ -229,8 +188,38 @@ function Index() {
         </div>
       </section>
 
-      {/* Vidéo cinématique avec bouton son */}
-      <CinemaVideo />
+      <section
+        className="relative w-full h-screen overflow-hidden bg-black cursor-pointer group"
+        onClick={() => setSelectedVideo(heroSectionVideo)}
+      >
+        <video
+          src={heroSectionVideo.videoSrc}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors" />
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <p className="font-display not-italic uppercase tracking-[0.18em] text-white text-xl md:text-4xl animate-[cinema-title_3.2s_ease-out_forwards]">
+            directed by MikaelAnge
+          </p>
+        </div>
+        {/* Play indicator */}
+        <div className="absolute bottom-10 right-10 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="w-16 h-16 rounded-full border border-white/30 flex items-center justify-center backdrop-blur-md bg-white/5">
+            <svg
+              className="w-6 h-6 text-white"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </div>
+        </div>
+      </section>
 
       {/* VIDEO WALL */}
       <section className="bg-white text-black border-y border-black/10">
@@ -251,18 +240,27 @@ function Index() {
             {heroShowcase.map((video, i) => (
               <article
                 key={video.id}
-                className={`${i === 0 ? "md:col-span-4" : i === 1 ? "md:col-span-3 md:mt-10" : i === 2 ? "md:col-span-2" : i === 3 ? "md:col-span-3 md:-mt-6" : "md:col-span-12"} border border-black/10 bg-transparent p-2 md:p-3`}
+                className={`${i === 0 ? "md:col-span-4" : i === 1 ? "md:col-span-3 md:mt-10" : i === 2 ? "md:col-span-2" : i === 3 ? "md:col-span-3 md:-mt-6" : "md:col-span-12"} border border-black/10 bg-transparent p-2 md:p-3 cursor-pointer group`}
+                onClick={() => setSelectedVideo(video)}
               >
-                {/* Ces vidéos sont en autoplay → restent muted, pas de bouton son pour ne pas surcharger le video wall */}
-                <video
-                  src={video.videoSrc}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="metadata"
-                  className="w-full aspect-[9/16] object-cover"
-                />
+                <div className="overflow-hidden relative">
+                  <video
+                    src={video.videoSrc}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="metadata"
+                    className="w-full aspect-[9/16] object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
+                     <div className="w-12 h-12 rounded-full border border-white/50 flex items-center justify-center backdrop-blur-sm">
+                        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                     </div>
+                  </div>
+                </div>
                 <div className="mt-4 text-center">
                   <p className="font-mono-label text-black/60">{video.category}</p>
                   <h3 className="font-display text-xl md:text-2xl mt-2 not-italic uppercase tracking-[0.08em] text-[#2b170d]">
@@ -288,7 +286,12 @@ function Index() {
 
         <div className="grid md:grid-cols-12 gap-x-6 gap-y-12">
           {featuredCreations.map((creation, i) => (
-            <HomeVideoCard key={creation.id} creation={creation} index={i} />
+            <HomeVideoCard
+              key={creation.id}
+              creation={creation}
+              index={i}
+              onSelect={setSelectedVideo}
+            />
           ))}
         </div>
       </section>
@@ -327,6 +330,13 @@ function Index() {
       </section>
 
       <SiteFooter />
+
+      {selectedVideo && (
+        <VideoModal
+          video={selectedVideo}
+          onClose={() => setSelectedVideo(null)}
+        />
+      )}
     </main>
   );
 }

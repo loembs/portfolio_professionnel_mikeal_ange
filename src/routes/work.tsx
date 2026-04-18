@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { creations, globalStats } from "@/lib/creations";
+import { creations, globalStats, type Creation } from "@/lib/creations";
 import { SiteFooter } from "@/components/site-footer";
+import { VideoModal } from "@/components/video-modal";
 import { useEffect, useRef, useState } from "react";
 
 export const Route = createFileRoute("/work")({
@@ -30,6 +31,7 @@ function useCountUp(target: string, duration = 2200) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Parse the numeric part from strings like "220K+", "3.3K+", "624h+"
     const cleaned = target.replace(/[^0-9.]/g, "");
     const numericTarget = parseFloat(cleaned) || 0;
     const suffix = target.replace(/[0-9.,\s]/g, "");
@@ -43,6 +45,7 @@ function useCountUp(target: string, duration = 2200) {
         const step = (now: number) => {
           const elapsed = now - start;
           const progress = Math.min(elapsed / duration, 1);
+          // easeOutExpo
           const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
           const current = numericTarget * eased;
 
@@ -106,30 +109,18 @@ function StatCard({
 function VideoCard({
   creation,
   index,
+  onSelect,
 }: {
-  creation: (typeof creations)[number];
+  creation: Creation;
   index: number;
+  onSelect: (video: Creation) => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
   const [showStats, setShowStats] = useState(false);
 
-  const togglePlay = () => {
-    if (!videoRef.current) return;
-    if (isPlaying) {
-      videoRef.current.pause();
-    } else {
-      videoRef.current.play();
-    }
-    setIsPlaying(!isPlaying);
-  };
-
-  const toggleMute = (e: React.MouseEvent) => {
-    e.stopPropagation(); // empêche le clic de déclencher togglePlay
-    if (!videoRef.current) return;
-    videoRef.current.muted = !isMuted;
-    setIsMuted(!isMuted);
+  const handleInteraction = () => {
+    onSelect(creation);
   };
 
   const layout =
@@ -146,7 +137,7 @@ function VideoCard({
       {/* Video container */}
       <div
         className="relative overflow-hidden bg-card cursor-pointer"
-        onClick={togglePlay}
+        onClick={handleInteraction}
         onMouseEnter={() => setShowStats(true)}
         onMouseLeave={() => setShowStats(false)}
       >
@@ -154,7 +145,7 @@ function VideoCard({
           ref={videoRef}
           src={creation.videoSrc}
           loop
-          muted // démarre muet, l'utilisateur active le son via le bouton
+          muted
           playsInline
           preload="metadata"
           className={`w-full aspect-[9/16] md:aspect-[4/5] object-cover transition-all duration-700 ${
@@ -178,16 +169,6 @@ function VideoCard({
             </svg>
           </div>
         </div>
-
-        {/* Bouton son — visible uniquement quand la vidéo joue */}
-        {isPlaying && (
-          <button
-            onClick={toggleMute}
-            className="absolute bottom-4 right-4 z-20 bg-black/50 backdrop-blur-sm border border-white/30 text-white px-3 py-2 font-mono-label text-xs hover:bg-black/70 transition-colors"
-          >
-            {isMuted ? "🔇 Son" : "🔊 Son"}
-          </button>
-        )}
 
         {/* Stats overlay on hover */}
         <div
@@ -251,6 +232,8 @@ function VideoCard({
 /*  Main page                                                          */
 /* ------------------------------------------------------------------ */
 function WorkPage() {
+  const [selectedVideo, setSelectedVideo] = useState<Creation | null>(null);
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -284,18 +267,32 @@ function WorkPage() {
         <div className="mx-auto max-w-[1600px] px-6 md:px-10 py-10 md:py-14">
           <div className="grid md:grid-cols-12 gap-4 md:gap-6">
             {creations.map((creation, i) => (
-              <article key={creation.id} className={`${i % 5 === 0 ? "md:col-span-4" : i % 3 === 0 ? "md:col-span-5" : "md:col-span-3"} border border-black/10 bg-[#f8f5f2] p-2`}>
-                {/* Video wall en autoplay → reste muted (contrainte navigateur) */}
-                <video
-                  src={creation.videoSrc}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="metadata"
-                  className="w-full aspect-[9/16] object-cover"
-                />
-                <h3 className="font-display text-xl md:text-2xl mt-3 not-italic">{creation.title}</h3>
+              <article
+                key={creation.id}
+                className={`${i % 5 === 0 ? "md:col-span-4" : i % 3 === 0 ? "md:col-span-5" : "md:col-span-3"} border border-black/10 bg-[#f8f5f2] p-2 cursor-pointer group`}
+                onClick={() => setSelectedVideo(creation)}
+              >
+                <div className="overflow-hidden relative">
+                  <video
+                    src={creation.videoSrc}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="metadata"
+                    className="w-full aspect-[9/16] object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
+                     <div className="w-12 h-12 rounded-full border border-white/50 flex items-center justify-center backdrop-blur-sm">
+                        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                     </div>
+                  </div>
+                </div>
+                <h3 className="font-display text-xl md:text-2xl mt-3 not-italic">
+                  {creation.title}
+                </h3>
               </article>
             ))}
           </div>
@@ -359,9 +356,21 @@ function WorkPage() {
 
         <div className="grid md:grid-cols-12 gap-x-8 gap-y-20">
           {creations.map((creation, i) => (
-            <VideoCard key={creation.id} creation={creation} index={i} />
+            <VideoCard
+              key={creation.id}
+              creation={creation}
+              index={i}
+              onSelect={setSelectedVideo}
+            />
           ))}
         </div>
+
+        {selectedVideo && (
+          <VideoModal
+            video={selectedVideo}
+            onClose={() => setSelectedVideo(null)}
+          />
+        )}
       </section>
 
       <section className="border-t border-border py-20 md:py-24">
