@@ -25,7 +25,7 @@ export const videoProjects: VideoProject[] = [
     client: "BRT",
     category: "Presentation",
     date: "Oct. 2025",
-    videoSrc: "/videos/creation-1.MOV",
+    videoSrc: "https://res.cloudinary.com/df96r2sny/video/upload/q_auto/f_auto/v1770640119/copy_DBF00AC7-98D2-4419-8F6A-4DF1F7CD43D6_jeoc7x.mov",
     description:
       "Video de presentation automobile orientee impact visuel pour social media.",
     tags: ["Auto", "Brand", "Social"],
@@ -45,7 +45,7 @@ export const videoProjects: VideoProject[] = [
     client: "Transport & Mobilite",
     category: "Entreprise",
     date: "Nov. 2025",
-    videoSrc: "/videos/creation-2.MOV",
+    videoSrc: "https://res.cloudinary.com/dlna2kuo1/video/upload/q_auto/f_auto/v1776447071/IMG_0332_fnz9n5.mov",
     description:
       "Contenu corporate court pour renforcer la presence de marque en ligne.",
     tags: ["Entreprise", "Story", "Reel"],
@@ -65,7 +65,7 @@ export const videoProjects: VideoProject[] = [
     client: "Green mobility",
     category: "Presentation",
     date: "Fev. 2026",
-    videoSrc: "/videos/creation-3.MOV",
+    videoSrc: "https://res.cloudinary.com/df96r2sny/video/upload/q_auto/f_auto/v1775281810/copy_ABE629D3-35F4-4E25-AD3C-6D25254FF0D4_jzrzig.mov",
     description:
       "Capsule dynamique pour valoriser un vehicule utilitaire en contexte reel.",
     tags: ["Auto", "Produit", "Performance"],
@@ -81,11 +81,11 @@ export const videoProjects: VideoProject[] = [
   },
   {
     id: 4,
-    title: "Alma Restaurant",
-    client: "Restauration",
+    title: "Storytelling",
+    client: "Own project",
     category: "Produit",
     date: "Mars 2026",
-    videoSrc: "/videos/creation-4.MOV",
+    videoSrc: "https://res.cloudinary.com/df96r2sny/video/upload/q_auto/f_auto/v1770640119/copy_DBF00AC7-98D2-4419-8F6A-4DF1F7CD43D6_jeoc7x.mov",
     description:
       "Montage showreel rythme pour presenter un univers de marque automobile.",
     tags: ["Showreel", "Marque", "Cinematique"],
@@ -105,7 +105,7 @@ export const videoProjects: VideoProject[] = [
     client: "UMY design",
     category: "Produit",
     date: "2025",
-    videoSrc: "/videos/creation-5.MOV",
+    videoSrc: "https://res.cloudinary.com/dlna2kuo1/video/upload/q_auto/f_auto/v1776446496/IMG_7088_dip6eg.mov",
     description:
       "Video culinaire orientee emotion, texture et desirabilite du produit.",
     tags: ["Food", "Culture", "Lifestyle"],
@@ -121,11 +121,11 @@ export const videoProjects: VideoProject[] = [
   },
   {
     id: 6,
-    title: "Video studio",
-    client: "Andal Creative",
+    title: "Alma Restaurant",
+    client: "Restaurant",
     category: "Studio",
     date: "2025",
-    videoSrc: "/videos/creation-6.MOV",
+    videoSrc: "https://res.cloudinary.com/dlna2kuo1/video/upload/q_auto/f_auto/v1776446397/IMG_5785_r0i3fg.mov",
     description:
       "Format vertical social pour mettre en avant un storytelling local fort.",
     tags: ["Food", "Local", "Engagement"],
