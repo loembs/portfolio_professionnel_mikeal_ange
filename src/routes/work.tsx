@@ -30,7 +30,6 @@ function useCountUp(target: string, duration = 2200) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Parse the numeric part from strings like "220K+", "3.3K+", "624h+"
     const cleaned = target.replace(/[^0-9.]/g, "");
     const numericTarget = parseFloat(cleaned) || 0;
     const suffix = target.replace(/[0-9.,\s]/g, "");
@@ -44,7 +43,6 @@ function useCountUp(target: string, duration = 2200) {
         const step = (now: number) => {
           const elapsed = now - start;
           const progress = Math.min(elapsed / duration, 1);
-          // easeOutExpo
           const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
           const current = numericTarget * eased;
 
@@ -114,6 +112,7 @@ function VideoCard({
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [showStats, setShowStats] = useState(false);
 
   const togglePlay = () => {
@@ -124,6 +123,13 @@ function VideoCard({
       videoRef.current.play();
     }
     setIsPlaying(!isPlaying);
+  };
+
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation(); // empêche le clic de déclencher togglePlay
+    if (!videoRef.current) return;
+    videoRef.current.muted = !isMuted;
+    setIsMuted(!isMuted);
   };
 
   const layout =
@@ -148,7 +154,7 @@ function VideoCard({
           ref={videoRef}
           src={creation.videoSrc}
           loop
-          muted
+          muted // démarre muet, l'utilisateur active le son via le bouton
           playsInline
           preload="metadata"
           className={`w-full aspect-[9/16] md:aspect-[4/5] object-cover transition-all duration-700 ${
@@ -172,6 +178,16 @@ function VideoCard({
             </svg>
           </div>
         </div>
+
+        {/* Bouton son — visible uniquement quand la vidéo joue */}
+        {isPlaying && (
+          <button
+            onClick={toggleMute}
+            className="absolute bottom-4 right-4 z-20 bg-black/50 backdrop-blur-sm border border-white/30 text-white px-3 py-2 font-mono-label text-xs hover:bg-black/70 transition-colors"
+          >
+            {isMuted ? "🔇 Son" : "🔊 Son"}
+          </button>
+        )}
 
         {/* Stats overlay on hover */}
         <div
@@ -269,6 +285,7 @@ function WorkPage() {
           <div className="grid md:grid-cols-12 gap-4 md:gap-6">
             {creations.map((creation, i) => (
               <article key={creation.id} className={`${i % 5 === 0 ? "md:col-span-4" : i % 3 === 0 ? "md:col-span-5" : "md:col-span-3"} border border-black/10 bg-[#f8f5f2] p-2`}>
+                {/* Video wall en autoplay → reste muted (contrainte navigateur) */}
                 <video
                   src={creation.videoSrc}
                   autoPlay

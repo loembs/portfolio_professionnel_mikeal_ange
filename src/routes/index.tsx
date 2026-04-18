@@ -30,6 +30,7 @@ function HomeVideoCard({
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [showStats, setShowStats] = useState(false);
 
   const togglePlay = () => {
@@ -40,6 +41,13 @@ function HomeVideoCard({
       videoRef.current.play();
     }
     setIsPlaying(!isPlaying);
+  };
+
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation(); // empêche le clic de déclencher togglePlay
+    if (!videoRef.current) return;
+    videoRef.current.muted = !isMuted;
+    setIsMuted(!isMuted);
   };
 
   const layout =
@@ -63,7 +71,7 @@ function HomeVideoCard({
           ref={videoRef}
           src={creation.videoSrc}
           loop
-          muted
+          muted // démarre muet pour respecter les règles navigateur
           playsInline
           preload="metadata"
           className={`w-full aspect-[9/16] md:aspect-[4/5] object-cover transition-all duration-700 ${
@@ -87,6 +95,16 @@ function HomeVideoCard({
             </svg>
           </div>
         </div>
+
+        {/* Bouton son — visible uniquement quand la vidéo joue */}
+        {isPlaying && (
+          <button
+            onClick={toggleMute}
+            className="absolute bottom-4 right-4 z-20 bg-black/50 backdrop-blur-sm border border-white/30 text-white px-3 py-2 font-mono-label text-xs hover:bg-black/70 transition-colors"
+          >
+            {isMuted ? "🔇 Son" : "🔊 Son"}
+          </button>
+        )}
 
         {/* Stats overlay on hover */}
         <div
@@ -127,6 +145,39 @@ function HomeVideoCard({
         <span className="font-mono-label text-muted-foreground">{creation.date}</span>
       </div>
     </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/*  Cinematic video section avec bouton unmute                         */
+/* ------------------------------------------------------------------ */
+function CinemaVideo() {
+  const [muted, setMuted] = useState(true);
+
+  return (
+    <section className="relative w-full h-screen overflow-hidden bg-black">
+      <video
+        src="https://res.cloudinary.com/dlna2kuo1/video/upload/v1769532846/IMG_0111_ybl39i.mov"
+        autoPlay
+        loop
+        muted={muted}
+        playsInline
+        preload="metadata"
+        className="w-full h-full object-cover"
+      />
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+        <p className="font-display not-italic uppercase tracking-[0.18em] text-white text-xl md:text-4xl animate-[cinema-title_3.2s_ease-out_forwards]">
+          directed by MikaelAnge
+        </p>
+      </div>
+      {/* Bouton unmute */}
+      <button
+        onClick={() => setMuted((m) => !m)}
+        className="absolute bottom-6 right-6 z-10 bg-black/50 backdrop-blur-sm border border-white/30 text-white px-4 py-2 font-mono-label text-xs hover:bg-black/70 transition-colors"
+      >
+        {muted ? "🔇 Activer le son" : "🔊 Couper le son"}
+      </button>
+    </section>
   );
 }
 
@@ -178,22 +229,8 @@ function Index() {
         </div>
       </section>
 
-      <section className="relative w-full h-screen overflow-hidden bg-black">
-        <video
-          src="https://res.cloudinary.com/dlna2kuo1/video/upload/v1769532846/IMG_0111_ybl39i.mov"
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="metadata"
-          className="w-full h-full object-cover"
-        />
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <p className="font-display not-italic uppercase tracking-[0.18em] text-white text-xl md:text-4xl animate-[cinema-title_3.2s_ease-out_forwards]">
-            directed by MikaelAnge
-          </p>
-        </div>
-      </section>
+      {/* Vidéo cinématique avec bouton son */}
+      <CinemaVideo />
 
       {/* VIDEO WALL */}
       <section className="bg-white text-black border-y border-black/10">
@@ -216,6 +253,7 @@ function Index() {
                 key={video.id}
                 className={`${i === 0 ? "md:col-span-4" : i === 1 ? "md:col-span-3 md:mt-10" : i === 2 ? "md:col-span-2" : i === 3 ? "md:col-span-3 md:-mt-6" : "md:col-span-12"} border border-black/10 bg-transparent p-2 md:p-3`}
               >
+                {/* Ces vidéos sont en autoplay → restent muted, pas de bouton son pour ne pas surcharger le video wall */}
                 <video
                   src={video.videoSrc}
                   autoPlay
