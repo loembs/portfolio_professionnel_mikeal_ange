@@ -85,7 +85,7 @@ export const videoProjects: VideoProject[] = [
     client: "Own project",
     category: "Produit",
     date: "Mars 2026",
-    videoSrc: "https://res.cloudinary.com/df96r2sny/video/upload/q_auto/f_auto/v1770640119/copy_DBF00AC7-98D2-4419-8F6A-4DF1F7CD43D6_jeoc7x.mov",
+    videoSrc: "https://res.cloudinary.com/df96r2sny/video/upload/q_auto/f_auto/v1767886693/copy_48BF027C-1C9D-40F5-80E3-5604D188B326_otobta.mov",
     description:
       "Montage showreel rythme pour presenter un univers de marque automobile.",
     tags: ["Showreel", "Marque", "Cinematique"],
